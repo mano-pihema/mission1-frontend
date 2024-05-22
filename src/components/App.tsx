@@ -12,7 +12,7 @@ import {
   CardBody,
 } from '@chakra-ui/react'
 import { FormEvent, useState } from 'react'
-import superagent from 'superagent'
+import { fetchSimilarStock, sendImageToModel } from '../api'
 
 function App() {
   const [image, setImage] = useState<File | undefined>()
@@ -26,19 +26,13 @@ function App() {
   }
 
   function submitHandler() {
-    superagent
-      .post(`${import.meta.env.VITE_CUSTOM_VISION_MODEL}`)
-      .set('Prediction-Key', `${import.meta.env.VITE_PREDICTION_KEY}`)
-      .set('Content-Type', 'application/octet-stream')
-      .send(image)
+    sendImageToModel(image)
       .then(({ body }) => setPrediction(body.predictions[0].tagName))
       .catch((err) => console.error(err))
   }
 
   function findStock() {
-    superagent
-      .post(backendURL)
-      .send({ car: prediction })
+    fetchSimilarStock(prediction)
       .then(({ body }) => setCars(body))
       .catch((err) => console.error(err))
   }
@@ -47,7 +41,7 @@ function App() {
       <Container>
         <Heading paddingBottom={4}>Car Checkerer</Heading>
         <Stack>
-          <div>
+          <Box>
             <Input
               type='file'
               id='myFileInput'
@@ -73,7 +67,7 @@ function App() {
                 </Text>
               )}
             </Box>
-          </div>
+          </Box>
 
           <Button colorScheme='teal' onClick={submitHandler}>
             Submit
@@ -99,7 +93,11 @@ function App() {
             cars.map(({ id, body, image, color, model, brand, year }) => (
               <Card key={id} variant={'filled'}>
                 <CardBody>
-                  <Image src={`${backendURL}/images/${image}`} alt='' />
+                  <Image
+                    src={`${backendURL}/images/${image}`}
+                    alt=''
+                    borderRadius={'lg'}
+                  />
                   <Stack>
                     <Heading as='h4' size='lg'>
                       {year + ' ' + brand + ' ' + model}
