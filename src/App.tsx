@@ -1,3 +1,16 @@
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Input,
+  Stack,
+  Text,
+  Image,
+  Divider,
+  Card,
+  CardBody,
+} from '@chakra-ui/react'
 import { FormEvent, useState } from 'react'
 import superagent from 'superagent'
 
@@ -12,9 +25,7 @@ function App() {
     setImage(target.files[0])
   }
 
-  function submitHandler(event: FormEvent) {
-    event.preventDefault()
-
+  function submitHandler() {
     superagent
       .post(`${import.meta.env.VITE_CUSTOM_VISION_MODEL}`)
       .set('Prediction-Key', `${import.meta.env.VITE_PREDICTION_KEY}`)
@@ -33,22 +44,74 @@ function App() {
   }
   return (
     <>
-      <h1>Car Checker</h1>
-      <form onSubmit={submitHandler}>
-        <input type='file' name='imageUpload' onChange={handleOnChange} />
-        <button>submit</button>
-      </form>
-      {image && <img width={200} src={`${URL.createObjectURL(image)}`} />}
-      <p>prediction: {prediction}</p>
-      {prediction && <button onClick={findStock}> find similar stock</button>}
-
-      {cars &&
-        cars.map(({ id, body, image }) => (
-          <div key={id}>
-            <p>body type: {body}</p>
-            <img src={`${backendURL}/images/${image}`} alt='' />
+      <Container>
+        <Heading paddingBottom={4}>Car Checkerer</Heading>
+        <Stack>
+          <div>
+            <Input
+              type='file'
+              id='myFileInput'
+              style={{ display: 'none' }}
+              onChange={handleOnChange}
+            />
+            <Box
+              cursor={'pointer'}
+              borderWidth='4px'
+              borderRadius='lg'
+              onClick={() => document.getElementById('myFileInput')?.click()}
+              overflow='hidden'
+              maxHeight={400}
+            >
+              {image ? (
+                <Image
+                  objectFit='cover'
+                  src={`${URL.createObjectURL(image)}`}
+                />
+              ) : (
+                <Text paddingY={20} align={'center'}>
+                  Choose an image
+                </Text>
+              )}
+            </Box>
           </div>
-        ))}
+
+          <Button colorScheme='teal' onClick={submitHandler}>
+            Submit
+          </Button>
+        </Stack>
+
+        <Divider
+          variant={'solid'}
+          colorScheme='teal'
+          orientation='horizontal'
+        />
+
+        <Box display={'flex'} justifyContent={'space-between'} paddingY={10}>
+          <Heading as='h3' size='lg'>
+            Prediction: {prediction}
+          </Heading>
+          {prediction && (
+            <Button onClick={findStock}> find similar stock</Button>
+          )}
+        </Box>
+        <Stack spacing={4}>
+          {cars &&
+            cars.map(({ id, body, image, color, model, brand, year }) => (
+              <Card key={id} variant={'filled'}>
+                <CardBody>
+                  <Image src={`${backendURL}/images/${image}`} alt='' />
+                  <Stack>
+                    <Heading as='h4' size='lg'>
+                      {year + ' ' + brand + ' ' + model}
+                    </Heading>
+                    <Text>body type: {body}</Text>
+                    <Text>color: {color}</Text>
+                  </Stack>
+                </CardBody>
+              </Card>
+            ))}
+        </Stack>
+      </Container>
     </>
   )
 }
