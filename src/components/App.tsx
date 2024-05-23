@@ -3,33 +3,18 @@ import {
   Button,
   Container,
   Heading,
-  Input,
   Stack,
-  Text,
-  Image,
   Divider,
-  Card,
-  CardBody,
 } from '@chakra-ui/react'
-import { FormEvent, useState } from 'react'
-import { fetchSimilarStock, sendImageToModel } from '../api'
+import { useState } from 'react'
+import { fetchSimilarStock } from '../api'
+import Car from './Car'
+import { CarType } from '../models/car'
+import FileInput from './FileInput'
 
 function App() {
-  const [image, setImage] = useState<File | undefined>()
   const [prediction, setPrediction] = useState('')
   const [cars, setCars] = useState([])
-  const backendURL = `${import.meta.env.VITE_BACKEND_URL}`
-
-  function handleOnChange(event: FormEvent<HTMLInputElement>) {
-    const target = event.target as HTMLElement & { files: FileList }
-    setImage(target.files[0])
-  }
-
-  function submitHandler() {
-    sendImageToModel(image)
-      .then(({ body }) => setPrediction(body.predictions[0].tagName))
-      .catch((err) => console.error(err))
-  }
 
   function findStock() {
     fetchSimilarStock(prediction)
@@ -40,39 +25,7 @@ function App() {
     <>
       <Container>
         <Heading paddingBottom={4}>Car Checkerer</Heading>
-        <Stack>
-          <Box>
-            <Input
-              type='file'
-              id='myFileInput'
-              style={{ display: 'none' }}
-              onChange={handleOnChange}
-            />
-            <Box
-              cursor={'pointer'}
-              borderWidth='4px'
-              borderRadius='lg'
-              onClick={() => document.getElementById('myFileInput')?.click()}
-              overflow='hidden'
-              maxHeight={400}
-            >
-              {image ? (
-                <Image
-                  objectFit='cover'
-                  src={`${URL.createObjectURL(image)}`}
-                />
-              ) : (
-                <Text paddingY={20} align={'center'}>
-                  Choose an image
-                </Text>
-              )}
-            </Box>
-          </Box>
-
-          <Button colorScheme='teal' onClick={submitHandler}>
-            Submit
-          </Button>
-        </Stack>
+        <FileInput setState={setPrediction} />
 
         <Divider
           variant={'solid'}
@@ -89,25 +42,7 @@ function App() {
           )}
         </Box>
         <Stack spacing={4}>
-          {cars &&
-            cars.map(({ id, body, image, color, model, brand, year }) => (
-              <Card key={id} variant={'filled'}>
-                <CardBody>
-                  <Image
-                    src={`${backendURL}/images/${image}`}
-                    alt=''
-                    borderRadius={'lg'}
-                  />
-                  <Stack>
-                    <Heading as='h4' size='lg'>
-                      {year + ' ' + brand + ' ' + model}
-                    </Heading>
-                    <Text>body type: {body}</Text>
-                    <Text>color: {color}</Text>
-                  </Stack>
-                </CardBody>
-              </Card>
-            ))}
+          {cars && cars.map((car: CarType) => <Car key={car.id} {...car} />)}
         </Stack>
       </Container>
     </>

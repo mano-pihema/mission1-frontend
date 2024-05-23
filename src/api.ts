@@ -6,6 +6,8 @@ export function sendImageToModel(image:File | undefined) {
       .set('Prediction-Key', `${import.meta.env.VITE_PREDICTION_KEY}`)
       .set('Content-Type', 'application/octet-stream')
       .send(image)
+      .then((res) =>res.body )
+      .catch((err) => console.error(err))
 }
 
 export function fetchSimilarStock(prediction:string) {
